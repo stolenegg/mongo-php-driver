@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        
+        
+        
+        <link rel="shortcut icon" href="../img/favicon.ico">
+
+        <title>Batch CRUD - PHongo: The MongoDB Driver for PHP</title>
+
+        <link href="../css/bootstrap-custom.min.css" rel="stylesheet">
+        <link href="../css/font-awesome-4.0.3.css" rel="stylesheet">
+        <link href="../css/prettify-1.0.css" rel="stylesheet">
+        <link href="../css/base.css" rel="stylesheet">
+
+        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+        <!--[if lt IE 9]>
+            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+            <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
+        <![endif]-->
+    </head>
+
+    <body>
+
+        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+    <div class="container">
+
+        <!-- Collapsed navigation -->
+        <div class="navbar-header">
+            <!-- Expander button -->
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                <span class="sr-only">Toggle navigation</span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+
+            <!-- Main title -->
+            <a class="navbar-brand" href="..">PHongo: The MongoDB Driver for PHP</a>
+        </div>
+
+        <!-- Expanded navigation -->
+        <div class="navbar-collapse collapse">
+            <!-- Main navigation -->
+            <ul class="nav navbar-nav">
+            
+            
+                <li >
+                    <a href="../crud">CRUD</a>
+                </li>
+            
+            
+            
+                <li class="active">
+                    <a href=".">Batch CRUD</a>
+                </li>
+            
+            
+            </ul>
+
+            <!-- Search, Navigation and Repo links -->
+            <ul class="nav navbar-nav navbar-right">
+                
+                <li >
+                    <a rel="next" href="../crud">
+                        <i class="fa fa-arrow-left"></i> Previous
+                    </a>
+                </li>
+                <li class="disabled">
+                    <a rel="prev" >
+                        Next <i class="fa fa-arrow-right"></i>
+                    </a>
+                </li>
+                
+                <li>
+                    <a href="https://github.com/bjori/phongo">
+                        
+                            <i class="fa fa-github"></i>
+                        
+                        GitHub
+                    </a>
+                </li>
+                
+            </ul>
+        </div>
+    </div>
+</div>
+
+        <div class="container">
+            <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
+    <ul class="nav bs-sidenav">
+    
+        <li class="main active"><a href="#batch-crud">Batch CRUD</a></li>
+        
+            <li><a href="#create">CREATE</a></li>
+        
+            <li><a href="#update">UPDATE</a></li>
+        
+            <li><a href="#delete">DELETE</a></li>
+        
+            <li><a href="#executing-and-checking-the-results">Executing and checking the results</a></li>
+        
+    
+    </ul>
+</div></div>
+            <div class="col-md-9" role="main">
+
+<h1 id="batch-crud">Batch CRUD</h1>
+<pre><code class="php">&lt;?php
+
+$hannes = array(
+    &quot;name&quot;    =&gt; &quot;Hannes&quot;, 
+    &quot;nick&quot;    =&gt; &quot;bjori&quot;,
+    &quot;citizen&quot; =&gt; &quot;Iceland&quot;,
+);
+$hayley = array(
+    &quot;name&quot;    =&gt; &quot;Hayley&quot;,
+    &quot;nick&quot;    =&gt; &quot;Alien Ninja&quot;,
+    &quot;citizen&quot; =&gt; &quot;USA&quot;,
+);
+$jonpall = array(
+    &quot;name&quot;    =&gt; &quot;Jon Pall&quot;,
+    &quot;nick&quot;    =&gt; &quot;unknown&quot;,
+    &quot;citizen&quot; =&gt; &quot;Iceland&quot;,
+);
+
+/* Ordered batch is executed in the same order as we add the operations to it.
+ * If operation fails the execution stops and no further operations executed.
+ * For unordered batch, the operations can be executed in any order by the database
+ * in an attempt to optimize its workload. An operation failure will not stop
+ * the exection of the rest of the operations.
+ * Default: true
+ */
+$ordered = true;
+
+$batch = new MongoDB\WriteBatch($ordered);
+
+?&gt;
+</code></pre>
+
+<h2 id="create">CREATE</h2>
+<pre><code class="php">&lt;?php
+
+/* Argument#1 The document (array/object) to insert.
+ * Returns the generated BSON\ObjectID if no _id was provided
+ */
+$hannes_id  = $batch-&gt;insert($hannes);
+$hayley_id  = $batch-&gt;insert($hayley);
+$jonpall_id = $batch-&gt;insert($jonpall);
+
+?&gt;
+</code></pre>
+
+<h2 id="update">UPDATE</h2>
+<pre><code class="php">&lt;?php
+
+/* Arguments
+ *  #1: array, search criteria
+ *  #2: array, the object or operations to apply to the matching document
+ *  #3: array, wire protocol options:
+ *             limit: integer, 0 or 1,
+ *                  0: Apply to all matching documents
+ *                  1: Only apply to the first matching document
+ *              upsert: boolean
+ *                  true: Insert new document matching the criteria
+ *                  false: Do not insert new document if no matches are found
+ */
+$batch-&gt;update(
+    array(&quot;_id&quot; =&gt; $hayley_id),
+    array('$set' =&gt; array(&quot;citizen&quot; =&gt; &quot;Iceland&quot;)),
+    array(&quot;limit&quot; =&gt; 1, &quot;upsert&quot; =&gt; false)
+);
+$batch-&gt;update(
+    array(&quot;citizen&quot; =&gt; &quot;Iceland&quot;),
+    array(&quot;$set&quot; =&gt; array(&quot;viking&quot; =&gt; true)),
+    array(&quot;limit&quot; =&gt; 0, &quot;upsert&quot; =&gt; false)
+);
+$batch-&gt;update(
+    array(&quot;name&quot; =&gt; &quot;Chuck Norris&quot;),
+    array('$set' =&gt; array(&quot;viking&quot; =&gt; false)),
+    array(&quot;limit&quot; =&gt; 1, &quot;upsert&quot; =&gt; true)
+);
+
+?&gt;
+</code></pre>
+
+<h2 id="delete">DELETE</h2>
+<pre><code class="php">&lt;?php
+
+/* Arguments
+ *  #1: array, search criteria
+ *  #2: array, wire protocol options:
+ *             limit: integer, 0 or 1,
+ *                  0: Delete all matching documents
+ *                  1: Only delete the first matching document
+ */
+$batch-&gt;delete(array(&quot;_id&quot; =&gt; $jonpall_id), array(&quot;limit&quot; =&gt; 1));
+
+?&gt;
+</code></pre>
+
+<h2 id="executing-and-checking-the-results">Executing and checking the results</h2>
+<pre><code class="php">&lt;?php
+$manager = new MongoDB\Manager(&quot;mongodb://localhost:27017&quot;);
+$wc      = new MongoDB\WriteConcern(MongoDB\WriteConcern::MAJORITY);
+$result  = $manager-&gt;executeWriteBatch(&quot;db.collection&quot;, $batch, $wc);
+
+printf(&quot;numInserted: %d\n&quot;, $result-&gt;getNumInserted());
+printf(&quot;numMatched: %d\n&quot;, $result-&gt;getNumMatched());
+printf(&quot;numModified: %d\n&quot;, $result-&gt;getNumModified());
+printf(&quot;numUpserted: %d\n&quot;, $result-&gt;getNumUpserted());
+printf(&quot;numRemoved: %d\n&quot;, $result-&gt;getNumRemoved());
+
+foreach ($result-&gt;getUpsertedIds() as $index =&gt; $id) {
+    printf(&quot;upsertedId: '%s', index: %d\n&quot;, $id, $index);
+}
+
+$query  = new MongoDB\Query(array(&quot;viking&quot; =&gt; false));
+$cursor = $manager-&gt;executeQuery(&quot;db.collection&quot;, $query);
+var_dump(iterator_to_array($cursor));
+
+?&gt;
+</code></pre>
+
+</div>
+        </div>
+
+        
+
+        <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+        <script src="../js/bootstrap-3.0.3.min.js"></script>
+        <script src="../js/prettify-1.0.min.js"></script>
+        <script src="../js/base.js"></script>
+    </body>
+</html>
