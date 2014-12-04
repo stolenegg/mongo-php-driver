@@ -48,14 +48,25 @@
             <ul class="nav navbar-nav">
             
             
-                <li >
-                    <a href="crud/">CRUD</a>
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">CRUD <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                    
+                        <li >
+                            <a href="crud/">Basic</a>
+                        </li>
+                    
+                        <li >
+                            <a href="batch/">Batches</a>
+                        </li>
+                    
+                    </ul>
                 </li>
             
             
             
                 <li >
-                    <a href="batch/">Batch CRUD</a>
+                    <a href="commands/">Commands</a>
                 </li>
             
             
@@ -134,5 +145,6 @@ $ echo "extension=phongo.so" &gt;&gt; `php --ini | grep "Loaded Configuration" |
         <script src="./js/bootstrap-3.0.3.min.js"></script>
         <script src="./js/prettify-1.0.min.js"></script>
         <script src="./js/base.js"></script>
+        <script src="./pretty.js"></script>
     </body>
 </html>

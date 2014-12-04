@@ -9,7 +9,7 @@
         
         <link rel="shortcut icon" href="../img/favicon.ico">
 
-        <title>CRUD - PHongo: The MongoDB Driver for PHP</title>
+        <title>Basic - PHongo: The MongoDB Driver for PHP</title>
 
         <link href="../css/bootstrap-custom.min.css" rel="stylesheet">
         <link href="../css/font-awesome-4.0.3.css" rel="stylesheet">
@@ -48,14 +48,25 @@
             <ul class="nav navbar-nav">
             
             
-                <li class="active">
-                    <a href=".">CRUD</a>
+                <li class="dropdown active">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">CRUD <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                    
+                        <li class="active">
+                            <a href=".">Basic</a>
+                        </li>
+                    
+                        <li >
+                            <a href="../batch">Batches</a>
+                        </li>
+                    
+                    </ul>
                 </li>
             
             
             
                 <li >
-                    <a href="../batch">Batch CRUD</a>
+                    <a href="../commands">Commands</a>
                 </li>
             
             
@@ -132,15 +143,15 @@ $wc = new MongoDB\WriteConcern($w, $wtimeout, $journal, $fsync);
  * if we can't find any secondaries */
 $prefer = MongoDB\ReadPreference::RP_SECONDARY_PREFERRED;
 $tags = array(
-        /* Prefer the West Coast datacenter in Iceland */
-        array(&quot;country&quot; =&gt; &quot;iceland&quot;, &quot;datacenter&quot; =&gt; &quot;west&quot;),
+    /* Prefer the West Coast datacenter in Iceland */
+    array(&quot;country&quot; =&gt; &quot;iceland&quot;, &quot;datacenter&quot; =&gt; &quot;west&quot;),
 
-        /* Fallback to any datacenter in Iceland */
-        array(&quot;country&quot; =&gt; &quot;iceland&quot;),
+    /* Fallback to any datacenter in Iceland */
+    array(&quot;country&quot; =&gt; &quot;iceland&quot;),
 
-        /* If Iceland is offline, read from whatever is online! */
-        array(),
-        );
+    /* If Iceland is offline, read from whatever is online! */
+    array(),
+);
 
 /* Construct the ReadPreference object from our options */
 $rp = new MongoDB\ReadPreference($prefer, $tags);
@@ -262,5 +273,6 @@ try {
         <script src="../js/bootstrap-3.0.3.min.js"></script>
         <script src="../js/prettify-1.0.min.js"></script>
         <script src="../js/base.js"></script>
+        <script src="../pretty.js"></script>
     </body>
 </html>

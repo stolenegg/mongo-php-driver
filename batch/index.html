@@ -9,7 +9,7 @@
         
         <link rel="shortcut icon" href="../img/favicon.ico">
 
-        <title>Batch CRUD - PHongo: The MongoDB Driver for PHP</title>
+        <title>Batches - PHongo: The MongoDB Driver for PHP</title>
 
         <link href="../css/bootstrap-custom.min.css" rel="stylesheet">
         <link href="../css/font-awesome-4.0.3.css" rel="stylesheet">
@@ -48,14 +48,25 @@
             <ul class="nav navbar-nav">
             
             
-                <li >
-                    <a href="../crud">CRUD</a>
+                <li class="dropdown active">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown">CRUD <b class="caret"></b></a>
+                    <ul class="dropdown-menu">
+                    
+                        <li >
+                            <a href="../crud">Basic</a>
+                        </li>
+                    
+                        <li class="active">
+                            <a href=".">Batches</a>
+                        </li>
+                    
+                    </ul>
                 </li>
             
             
             
-                <li class="active">
-                    <a href=".">Batch CRUD</a>
+                <li >
+                    <a href="../commands">Commands</a>
                 </li>
             
             
@@ -69,8 +80,8 @@
                         <i class="fa fa-arrow-left"></i> Previous
                     </a>
                 </li>
-                <li class="disabled">
-                    <a rel="prev" >
+                <li >
+                    <a rel="prev" href="../commands">
                         Next <i class="fa fa-arrow-right"></i>
                     </a>
                 </li>
@@ -234,5 +245,6 @@ var_dump(iterator_to_array($cursor));
         <script src="../js/bootstrap-3.0.3.min.js"></script>
         <script src="../js/prettify-1.0.min.js"></script>
         <script src="../js/base.js"></script>
+        <script src="../pretty.js"></script>
     </body>
 </html>
