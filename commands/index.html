@@ -57,7 +57,7 @@
                         </li>
                     
                         <li >
-                            <a href="../batch">Batches</a>
+                            <a href="../bulk">Bulks</a>
                         </li>
                     
                     </ul>
@@ -82,7 +82,7 @@
             <ul class="nav navbar-nav navbar-right">
                 
                 <li >
-                    <a rel="next" href="../batch">
+                    <a rel="next" href="../bulk">
                         <i class="fa fa-arrow-left"></i> Previous
                     </a>
                 </li>
@@ -135,14 +135,14 @@ $manager = new MongoDB\Driver\Manager(&quot;mongodb://localhost:27017&quot;);
 
 $listdatabases = new MongoDB\Driver\Command(array(&quot;listDatabases&quot; =&gt; 1));
 $retval        = $manager-&gt;executeCommand(&quot;admin&quot;, $listdatabases);
-$databases     = $retval-&gt;getResponseDocument();
+$databases     = $retval-&gt;toArray();
 
 foreach($databases[&quot;databases&quot;] as $database) {
     echo $database-&gt;name, &quot;\n&quot;;
 
     $listcollections = new MongoDB\Driver\Command(array(&quot;listCollections&quot; =&gt; 1));
     $retval          = $manager-&gt;executeCommand($database-&gt;name, $listcollections);
-    $collections     = $retval-&gt;getResponseDocument();
+    $collections     = $retval-&gt;toArray();
     foreach($collections[&quot;collections&quot;] as $collection) {
         echo &quot;\t- &quot;, $collection-&gt;name, &quot;\n&quot;;
     }
@@ -174,7 +174,7 @@ $createuser = new MongoDB\Driver\Command($command);
 
 try {
     $result     = $manager-&gt;executeCommand(&quot;admin&quot;, $createuser);
-    $response   = $result-&gt;getResponseDocument();
+    $response   = $result-&gt;toArray();
     if ($reponse[&quot;ok&quot;]) {
         echo &quot;User created\n&quot;;
     }
@@ -213,7 +213,7 @@ $manager = new MongoDB\Driver\Manager(&quot;mongodb://localhost:27017&quot;);
 $query    = array(&quot;citizen&quot; =&gt; &quot;Iceland&quot;);
 $count    = new MongoDB\Driver\Command(array(&quot;count&quot; =&gt; &quot;collection&quot;, &quot;query&quot; =&gt; $query));
 $retval   = $manager-&gt;executeCommand(&quot;db&quot;, $count, $rp);
-$response = $retval-&gt;getResponseDocument();
+$response = $retval-&gt;toArray();
 if ($response[&quot;ok&quot;]) {
     printf(&quot;db.collection has %d documents matching: %s\n&quot;,
         $response[&quot;n&quot;],

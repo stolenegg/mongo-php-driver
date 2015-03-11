@@ -57,7 +57,7 @@
                         </li>
                     
                         <li >
-                            <a href="../batch">Batches</a>
+                            <a href="../bulk">Bulks</a>
                         </li>
                     
                     </ul>
@@ -87,7 +87,7 @@
                     </a>
                 </li>
                 <li >
-                    <a rel="prev" href="../batch">
+                    <a rel="prev" href="../bulk">
                         Next <i class="fa fa-arrow-right"></i>
                     </a>
                 </li>
@@ -196,7 +196,7 @@ $query = new MongoDB\Driver\Query(array());
 try {
     /* Full namespace as the first argument (dbname.collname), and the query object
      * to execute as the second.
-     * Returns MongoDB\Driver\QueryResult on success, throws exception on failure
+     * Returns MongoDB\Driver\Result on success, throws exception on failure
      */
     $cursor = $manager-&gt;executeQuery(&quot;db.collection&quot;, $query, $rp);
 

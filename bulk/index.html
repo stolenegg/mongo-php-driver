@@ -9,7 +9,7 @@
         
         <link rel="shortcut icon" href="../img/favicon.ico">
 
-        <title>Batches - PHongo: The MongoDB Driver for PHP</title>
+        <title>Bulks - PHongo: The MongoDB Driver for PHP</title>
 
         <link href="../css/bootstrap-custom.min.css" rel="stylesheet">
         <link href="../css/font-awesome-4.0.3.css" rel="stylesheet">
@@ -57,7 +57,7 @@
                         </li>
                     
                         <li class="active">
-                            <a href=".">Batches</a>
+                            <a href=".">Bulks</a>
                         </li>
                     
                     </ul>
@@ -129,7 +129,7 @@
 <pre><code class="php">&lt;?php
 
 $hannes = array(
-    &quot;name&quot;    =&gt; &quot;Hannes&quot;, 
+    &quot;name&quot;    =&gt; &quot;Hannes&quot;,
     &quot;nick&quot;    =&gt; &quot;bjori&quot;,
     &quot;citizen&quot; =&gt; &quot;Iceland&quot;,
 );
@@ -144,16 +144,16 @@ $jonpall = array(
     &quot;citizen&quot; =&gt; &quot;Iceland&quot;,
 );
 
-/* Ordered batch is executed in the same order as we add the operations to it.
+/* Ordered bulk is executed in the same order as we add the operations to it.
  * If operation fails the execution stops and no further operations executed.
- * For unordered batch, the operations can be executed in any order by the database
+ * For unordered bulk, the operations can be executed in any order by the database
  * in an attempt to optimize its workload. An operation failure will not stop
  * the exection of the rest of the operations.
  * Default: true
  */
 $ordered = true;
 
-$batch = new MongoDB\Driver\WriteBatch($ordered);
+$bulk = new MongoDB\Driver\BulkWrite($ordered);
 
 ?&gt;
 </code></pre>
@@ -164,9 +164,9 @@ $batch = new MongoDB\Driver\WriteBatch($ordered);
 /* Argument#1 The document (array/object) to insert.
  * Returns the generated BSON\ObjectID if no _id was provided
  */
-$hannes_id  = $batch-&gt;insert($hannes);
-$hayley_id  = $batch-&gt;insert($hayley);
-$jonpall_id = $batch-&gt;insert($jonpall);
+$hannes_id  = $bulk-&gt;insert($hannes);
+$hayley_id  = $bulk-&gt;insert($hayley);
+$jonpall_id = $bulk-&gt;insert($jonpall);
 
 ?&gt;
 </code></pre>
@@ -185,17 +185,17 @@ $jonpall_id = $batch-&gt;insert($jonpall);
  *                  true: Insert new document matching the criteria
  *                  false: Do not insert new document if no matches are found
  */
-$batch-&gt;update(
+$bulk-&gt;update(
     array(&quot;_id&quot; =&gt; $hayley_id),
     array('$set' =&gt; array(&quot;citizen&quot; =&gt; &quot;Iceland&quot;)),
     array(&quot;limit&quot; =&gt; 1, &quot;upsert&quot; =&gt; false)
 );
-$batch-&gt;update(
+$bulk-&gt;update(
     array(&quot;citizen&quot; =&gt; &quot;Iceland&quot;),
     array('$set' =&gt; array(&quot;viking&quot; =&gt; true)),
     array(&quot;limit&quot; =&gt; 0, &quot;upsert&quot; =&gt; false)
 );
-$batch-&gt;update(
+$bulk-&gt;update(
     array(&quot;name&quot; =&gt; &quot;Chuck Norris&quot;),
     array('$set' =&gt; array(&quot;viking&quot; =&gt; false)),
     array(&quot;limit&quot; =&gt; 1, &quot;upsert&quot; =&gt; true)
@@ -214,7 +214,7 @@ $batch-&gt;update(
  *                  0: Delete all matching documents
  *                  1: Only delete the first matching document
  */
-$batch-&gt;delete(array(&quot;_id&quot; =&gt; $jonpall_id), array(&quot;limit&quot; =&gt; 1));
+$bulk-&gt;delete(array(&quot;_id&quot; =&gt; $jonpall_id), array(&quot;limit&quot; =&gt; 1));
 
 ?&gt;
 </code></pre>
@@ -223,7 +223,7 @@ $batch-&gt;delete(array(&quot;_id&quot; =&gt; $jonpall_id), array(&quot;limit&qu
 <pre><code class="php">&lt;?php
 $manager = new MongoDB\Driver\Manager(&quot;mongodb://localhost:27017&quot;);
 $wc      = new MongoDB\Driver\WriteConcern(MongoDB\Driver\WriteConcern::MAJORITY);
-$result  = $manager-&gt;executeWriteBatch(&quot;db.collection&quot;, $batch, $wc);
+$result  = $manager-&gt;executeBulkWrite(&quot;db.collection&quot;, $bulk, $wc);
 
 printf(&quot;insertedCount: %d\n&quot;, $result-&gt;getInsertedCount());
 printf(&quot;matchedCount: %d\n&quot;, $result-&gt;getMatchedCount());
@@ -239,7 +239,7 @@ $query  = new MongoDB\Driver\Query(array(&quot;viking&quot; =&gt; false));
 $cursor = $manager-&gt;executeQuery(&quot;db.collection&quot;, $query);
 /* Note that var_dump()ing the $cursor will print out all sorts of debug information
  * about the cursor, such as ReadPreferences used, the query executed, namespace,
- * query flags, and the current batch information */
+ * query flags, and the current bulk information */
 var_dump(iterator_to_array($cursor));
 
 ?&gt;
