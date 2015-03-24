@@ -9,7 +9,7 @@
         
         <link rel="shortcut icon" href="./img/favicon.ico">
 
-        <title>PHongo: The MongoDB Driver for PHP</title>
+        <title>MongoDB Driver for PHP</title>
 
         <link href="./css/bootstrap-custom.min.css" rel="stylesheet">
         <link href="./css/font-awesome-4.0.3.css" rel="stylesheet">
@@ -39,7 +39,7 @@
             </button>
 
             <!-- Main title -->
-            <a class="navbar-brand" href=".">PHongo: The MongoDB Driver for PHP</a>
+            <a class="navbar-brand" href=".">MongoDB Driver for PHP</a>
         </div>
 
         <!-- Expanded navigation -->
@@ -138,8 +138,7 @@ and make your own.</p>
 choose one (or more) userland PHP libraries that depend on this driver, and install
 them using, for example, Composer.</p>
 <p>To build and install the driver:</p>
-<pre><code>$ wget https://github.com/10gen-labs/mongo-php-driver-prototype/releases/download/0.2.0/mongodb-0.2.0.tgz
-$ pecl install mongodb-0.2.0.tgz
+<pre><code>$ pecl install mongodb-alpha
 $ echo "extension=mongodb.so" &gt;&gt; `php --ini | grep "Loaded Configuration" | sed -e "s|.*:\s*||"`
 </code></pre>
 </div>
