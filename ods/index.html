@@ -9,7 +9,7 @@
         
         <link rel="shortcut icon" href="../img/favicon.ico">
 
-        <title>Object Document Serialization - MongoDB Driver for PHP</title>
+        <title>Object Document Serialization - PHongo: The MongoDB Driver for PHP</title>
 
         <link href="../css/bootstrap-custom.min.css" rel="stylesheet">
         <link href="../css/font-awesome-4.0.3.css" rel="stylesheet">
@@ -39,7 +39,7 @@
             </button>
 
             <!-- Main title -->
-            <a class="navbar-brand" href="..">MongoDB Driver for PHP</a>
+            <a class="navbar-brand" href="..">PHongo: The MongoDB Driver for PHP</a>
         </div>
 
         <!-- Expanded navigation -->
@@ -262,40 +262,40 @@ try {
 
 <p>This will result in the following document to be stored (as shown by mongo shell):</p>
 <pre><code>{
-        &quot;_id&quot; : ObjectId(&quot;54c9664fbd21b9416f2e0501&quot;),
-        &quot;__&quot; : BinData(128,&quot;UGVyc29u&quot;),
-        &quot;name&quot; : &quot;Hannes&quot;,
-        &quot;age&quot; : 31,
-        &quot;address&quot; : [
-                [
-                        BinData(128,&quot;QWRkcmVzcw==&quot;),
-                        94086,
-                        &quot;USA&quot;
-                ],
-                [
-                        BinData(128,&quot;QWRkcmVzcw==&quot;),
-                        200,
-                        &quot;Iceland&quot;
-                ]
-        ],
-        &quot;friends&quot; : [
-                [
-                        BinData(128,&quot;UGVyc29u&quot;),
-                        ObjectId(&quot;54c9664fbd21b9416f2e0502&quot;),
-                        &quot;Jeremy&quot;,
-                        21,
-                        [
-                                [
-                                        BinData(128,&quot;QWRkcmVzcw==&quot;),
-                                        48169,
-                                        &quot;USA&quot;
-                                ]
-                        ],
-                        {
+    &quot;_id&quot; : ObjectId(&quot;551f2004bd21b959de3c15b1&quot;),
+    &quot;__pclass&quot; : BinData(128,&quot;UGVyc29u&quot;),
+    &quot;name&quot; : &quot;Hannes&quot;,
+    &quot;age&quot; : 31,
+    &quot;address&quot; : [
+        {
+            &quot;__pclass&quot; : BinData(128,&quot;QWRkcmVzcw==&quot;),
+            &quot;zip&quot; : 94086,
+            &quot;country&quot; : &quot;USA&quot;
+        },
+        {
+            &quot;__pclass&quot; : BinData(128,&quot;QWRkcmVzcw==&quot;),
+            &quot;zip&quot; : 200,
+            &quot;country&quot; : &quot;Iceland&quot;
+        }
+    ],
+    &quot;friends&quot; : [
+        {
+            &quot;__pclass&quot; : BinData(128,&quot;UGVyc29u&quot;),
+            &quot;_id&quot; : ObjectId(&quot;551f2004bd21b959de3c15b2&quot;),
+            &quot;name&quot; : &quot;Jeremy&quot;,
+            &quot;age&quot; : 21,
+            &quot;address&quot; : [
+                {
+                    &quot;__pclass&quot; : BinData(128,&quot;QWRkcmVzcw==&quot;),
+                    &quot;zip&quot; : 48169,
+                    &quot;country&quot; : &quot;USA&quot;
+                }
+            ],
+            &quot;friends&quot; : {
 
-                        }
-                ]
-        ]
+            }
+        }
+    ]
 }
 </code></pre>
 

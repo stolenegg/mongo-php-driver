@@ -9,7 +9,7 @@
         
         <link rel="shortcut icon" href="../img/favicon.ico">
 
-        <title>Commands - MongoDB Driver for PHP</title>
+        <title>Commands - PHongo: The MongoDB Driver for PHP</title>
 
         <link href="../css/bootstrap-custom.min.css" rel="stylesheet">
         <link href="../css/font-awesome-4.0.3.css" rel="stylesheet">
@@ -39,7 +39,7 @@
             </button>
 
             <!-- Main title -->
-            <a class="navbar-brand" href="..">MongoDB Driver for PHP</a>
+            <a class="navbar-brand" href="..">PHongo: The MongoDB Driver for PHP</a>
         </div>
 
         <!-- Expanded navigation -->
@@ -143,7 +143,7 @@ foreach($databases[&quot;databases&quot;] as $database) {
     $listcollections = new MongoDB\Driver\Command(array(&quot;listCollections&quot; =&gt; 1));
     $retval          = $manager-&gt;executeCommand($database-&gt;name, $listcollections);
     $collections     = $retval-&gt;toArray();
-    foreach($collections[&quot;collections&quot;] as $collection) {
+    foreach($collections as $collection) {
         echo &quot;\t- &quot;, $collection-&gt;name, &quot;\n&quot;;
     }
 }
@@ -175,7 +175,7 @@ $createuser = new MongoDB\Driver\Command($command);
 try {
     $result     = $manager-&gt;executeCommand(&quot;admin&quot;, $createuser);
     $response   = $result-&gt;toArray();
-    if ($reponse[&quot;ok&quot;]) {
+    if ($response[&quot;ok&quot;]) {
         echo &quot;User created\n&quot;;
     }
 } catch(Exception $e) {
