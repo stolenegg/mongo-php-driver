@@ -2,7 +2,7 @@
     "docs": [
         {
             "location": "/", 
-            "text": "What is pecl/mongodb?\n\n\npecl/mongodb\n is an\nexperimental MongoDB driver for PHP, likely replacing the\n\nmongodb/mongo-php-driver\n driver in the\nnear future.\n\n\npecl/mongodb is written ontop of \nlibmongoc\n and\n\nlibbson\n, and is meant to be as basic as possible.\nCore MongoDB concepts are implemented, but everything else is left for other toolkits\nto come in and provide pretty and flexible bindings that make sense for their ecosystem.\n\n\nThis makes the driver exceptionally fast, and really easy to work with and provide\nfirst class experience in your framework, library or application.\n\n\nThe plan is to provide an example bindings, which you may chose to use - or ignore\nand make your own.\n\n\nInstallation\n\n\nUltimately, this extension is not intended to be explicitly installed. Users should\nchoose one (or more) userland PHP libraries that depend on this driver, and install\nthem using, for example, Composer.\n\n\nTo build and install the driver:\n\n\n$ pecl install mongodb-alpha\n$ echo \"extension=mongodb.so\" \n `php --ini | grep \"Loaded Configuration\" | sed -e \"s|.*:\\s*||\"`", 
+            "text": "What is pecl/mongodb?\n\n\npecl/mongodb\n is an\nexperimental MongoDB driver for PHP, likely replacing the\n\nmongodb/mongo-php-driver\n driver in the\nnear future.\n\n\npecl/mongodb is written ontop of \nlibmongoc\n and\n\nlibbson\n, and is meant to be as basic as possible.\nCore MongoDB concepts are implemented, but everything else is left for other toolkits\nto come in and provide pretty and flexible bindings that make sense for their ecosystem.\n\n\nThis makes the driver exceptionally fast, and really easy to work with and provide\nfirst class experience in your framework, library or application.\n\n\nThe plan is to provide an example bindings, which you may chose to use - or ignore\nand make your own.\n\n\nInstallation\n\n\nUltimately, this extension is not intended to be explicitly installed. Users should\nchoose one (or more) userland PHP libraries that depend on this driver, and install\nthem using, for example, Composer.\n\n\nTo build and install the driver:\n\n\n$ pecl install mongodb-beta\n$ echo \"extension=mongodb.so\" \n `php --ini | grep \"Loaded Configuration\" | sed -e \"s|.*:\\s*||\"`", 
             "title": "Home"
         }, 
         {
@@ -12,7 +12,7 @@
         }, 
         {
             "location": "/#installation", 
-            "text": "Ultimately, this extension is not intended to be explicitly installed. Users should\nchoose one (or more) userland PHP libraries that depend on this driver, and install\nthem using, for example, Composer.  To build and install the driver:  $ pecl install mongodb-alpha\n$ echo \"extension=mongodb.so\"   `php --ini | grep \"Loaded Configuration\" | sed -e \"s|.*:\\s*||\"`", 
+            "text": "Ultimately, this extension is not intended to be explicitly installed. Users should\nchoose one (or more) userland PHP libraries that depend on this driver, and install\nthem using, for example, Composer.  To build and install the driver:  $ pecl install mongodb-beta\n$ echo \"extension=mongodb.so\"   `php --ini | grep \"Loaded Configuration\" | sed -e \"s|.*:\\s*||\"`", 
             "title": "Installation"
         }, 
         {
