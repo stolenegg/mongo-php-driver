@@ -117,115 +117,129 @@
             <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
     
-        <li class="main active"><a href="#running-commands">Running Commands</a></li>
+        <li class="main active"><a href="#executing-commands">Executing Commands</a></li>
         
     
-        <li class="main "><a href="#listing-databases-collections">Listing databases &amp; collections</a></li>
+        <li class="main "><a href="#listing-databases-and-collections">Listing databases and collections</a></li>
         
     
-        <li class="main "><a href="#create-a-user">Create a User</a></li>
+        <li class="main "><a href="#create-a-user">Create a user</a></li>
         
-            <li><a href="#commands-and-readpreferences">Commands and ReadPreferences</a></li>
+            <li><a href="#commands-and-read-preferences">Commands and read preferences</a></li>
         
     
     </ul>
 </div></div>
             <div class="col-md-9" role="main">
 
-<h1 id="running-commands">Running Commands</h1>
-<h1 id="listing-databases-collections">Listing databases &amp; collections</h1>
+<h1 id="executing-commands">Executing Commands</h1>
+<h1 id="listing-databases-and-collections">Listing databases and collections</h1>
 <pre><code class="php">&lt;?php
 
-/* Construct the MongoDB Manager */
+// Construct the MongoDB Manager
 $manager = new MongoDB\Driver\Manager(&quot;mongodb://localhost:27017&quot;);
 
+// Construct and execute the listDatabases command
+$listdatabases = new MongoDB\Driver\Command([&quot;listDatabases&quot; =&gt; 1]);
+$result        = $manager-&gt;executeCommand(&quot;admin&quot;, $listdatabases);
 
-$listdatabases = new MongoDB\Driver\Command(array(&quot;listDatabases&quot; =&gt; 1));
-$retval        = $manager-&gt;executeCommand(&quot;admin&quot;, $listdatabases);
-$databases     = $retval-&gt;toArray();
+/* The command returns a single result document, which contains the information
+ * for all databases in a &quot;databases&quot; array field. */
+$databases     = current($result-&gt;toArray());
 
-foreach($databases[&quot;databases&quot;] as $database) {
+foreach ($databases[&quot;databases&quot;] as $database) {
     echo $database-&gt;name, &quot;\n&quot;;
 
-    $listcollections = new MongoDB\Driver\Command(array(&quot;listCollections&quot; =&gt; 1));
-    $retval          = $manager-&gt;executeCommand($database-&gt;name, $listcollections);
-    $collections     = $retval-&gt;toArray();
-    foreach($collections as $collection) {
-        echo &quot;\t- &quot;, $collection-&gt;name, &quot;\n&quot;;
+    // Construct and execute the listCollections command for each database
+    $listcollections = new MongoDB\Driver\Command([&quot;listCollections&quot; =&gt; 1]);
+    $result          = $manager-&gt;executeCommand($database-&gt;name, $listcollections);
+
+    /* The command returns a cursor, which we can iterate on to access
+     * information for each collection. */
+    $collections     = $result-&gt;toArray();
+
+    foreach ($collections as $collection) {
+        echo &quot;\t * &quot;, $collection-&gt;name, &quot;\n&quot;;
     }
 }
 
 ?&gt;
 </code></pre>
 
-<h1 id="create-a-user">Create a User</h1>
+<h1 id="create-a-user">Create a user</h1>
 <pre><code class="php">&lt;?php
 
-
-/* Construct the MongoDB Manager */
+// Construct the MongoDB Manager
 $manager = new MongoDB\Driver\Manager(&quot;mongodb://localhost:27017&quot;);
 
-
-$command = array(
+// Construct the createUser command
+$createuser = new MongoDB\Driver\Command([
     &quot;createUser&quot; =&gt; &quot;USERNAME2&quot;,
     &quot;pwd&quot;        =&gt; &quot;PASSWORD&quot;,
-    &quot;roles&quot;      =&gt; array(
-        array(&quot;role&quot; =&gt; &quot;clusterAdmin&quot;,         &quot;db&quot; =&gt; &quot;admin&quot;),
-        array(&quot;role&quot; =&gt; &quot;readWriteAnyDatabase&quot;, &quot;db&quot; =&gt; &quot;admin&quot;),
-        array(&quot;role&quot; =&gt; &quot;userAdminAnyDatabase&quot;, &quot;db&quot; =&gt; &quot;admin&quot;),
+    &quot;roles&quot;      =&gt; [
+        [&quot;role&quot; =&gt; &quot;clusterAdmin&quot;,         &quot;db&quot; =&gt; &quot;admin&quot;],
+        [&quot;role&quot; =&gt; &quot;readWriteAnyDatabase&quot;, &quot;db&quot; =&gt; &quot;admin&quot;],
+        [&quot;role&quot; =&gt; &quot;userAdminAnyDatabase&quot;, &quot;db&quot; =&gt; &quot;admin&quot;],
         &quot;readWrite&quot;,
-    ),
-    &quot;writeConcern&quot; =&gt; array(&quot;w&quot; =&gt; &quot;majority&quot;),
-);
-$createuser = new MongoDB\Driver\Command($command);
+    ],
+    &quot;writeConcern&quot; =&gt; [&quot;w&quot; =&gt; &quot;majority&quot;],
+]);
 
 try {
     $result     = $manager-&gt;executeCommand(&quot;admin&quot;, $createuser);
-    $response   = $result-&gt;toArray();
+    $response   = current($result-&gt;toArray());
+
     if ($response[&quot;ok&quot;]) {
-        echo &quot;User created\n&quot;;
+        echo &quot;User created successfully\n&quot;;
     }
-} catch(Exception $e) {
+} catch (MongoDB\Driver\Exception\Exception $e) {
     echo $e-&gt;getMessage(), &quot;\n&quot;;
 }
-
 
 ?&gt;
 </code></pre>
 
-<h2 id="commands-and-readpreferences">Commands and ReadPreferences</h2>
+<h2 id="commands-and-read-preferences">Commands and read preferences</h2>
 <pre><code class="php">&lt;?php
 
-/* Some commands, like count, dbStats, aggregate, ... can be executed on secondaries.
- * Just like with normal queries, an instance of MongoDB\Driver\ReadPreference needs to
- * be constructed to prefer certain servers over others */
-$prefer = MongoDB\Driver\ReadPreference::RP_SECONDARY_PREFERRED;
-$tags = array(
-    /* Prefer the West Coast datacenter in Iceland */
-    array(&quot;country&quot; =&gt; &quot;iceland&quot;, &quot;datacenter&quot; =&gt; &quot;west&quot;),
+/* Some commands (e.g. count, aggregate) may be executed on secondaries. As with
+ * normal queries, we can supply a MongoDB\Driver\ReadPreference object when
+ * executing a command in order to prefer certain servers over others. */
 
-    /* Fallback to any datacenter in Iceland */
-    array(&quot;country&quot; =&gt; &quot;iceland&quot;),
-
-    /* If Iceland is offline, read from whatever is online! */
-    array(),
+// Construct a read preference
+$rp = new MongoDB\Driver\ReadPreference(
+    /* We prefer to read from a secondary, but are OK with reading from the
+     * primary if necessary (e.g. secondaries are offline) */
+    MongoDB\Driver\ReadPreference::RP_SECONDARY_PREFERRED,
+    // Specify some tag sets for our preferred nodes
+    [
+        // Prefer reading from our west coast datacenter in Iceland
+        [&quot;country&quot; =&gt; &quot;iceland&quot;, &quot;datacenter&quot; =&gt; &quot;west&quot;],
+        // Fall back to any datacenter in Iceland
+        [&quot;country&quot; =&gt; &quot;iceland&quot;],
+        // If Iceland is offline, read from whatever is available
+        [],
+    ]
 );
 
-/* Construct the ReadPreference object from our options */
-$rp = new MongoDB\Driver\ReadPreference($prefer, $tags);
-
-/* Construct the MongoDB Manager */
+// Construct the MongoDB Manager
 $manager = new MongoDB\Driver\Manager(&quot;mongodb://localhost:27017&quot;);
 
-$query    = array(&quot;citizen&quot; =&gt; &quot;Iceland&quot;);
-$count    = new MongoDB\Driver\Command(array(&quot;count&quot; =&gt; &quot;collection&quot;, &quot;query&quot; =&gt; $query));
-$retval   = $manager-&gt;executeCommand(&quot;db&quot;, $count, $rp);
-$response = $retval-&gt;toArray();
-if ($response[&quot;ok&quot;]) {
-    printf(&quot;db.collection has %d documents matching: %s\n&quot;,
-        $response[&quot;n&quot;],
-        BSON\toJSON(BSON\fromArray($query))
-    );
+$query = [&quot;citizen&quot; =&gt; &quot;Iceland&quot;];
+$count = new MongoDB\Driver\Command([&quot;count&quot; =&gt; &quot;collection&quot;, &quot;query&quot; =&gt; $query]);
+
+try {
+    $result   = $manager-&gt;executeCommand(&quot;db&quot;, $count, $rp);
+    $response = current($result-&gt;toArray());
+
+    if ($response[&quot;ok&quot;]) {
+        printf(&quot;db.collection has %d document(s) matching: %s\n&quot;,
+            $response[&quot;n&quot;],
+            MongoDB\BSON\toJSON(MongoDB\BSON\fromArray($query))
+        );
+    }
+} catch (MongoDB\Driver\Exception\Exception $e) {
+    echo $e-&gt;getMessage(), &quot;\n&quot;;
 }
 
 ?&gt;

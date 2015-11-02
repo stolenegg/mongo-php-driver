@@ -127,81 +127,97 @@
             <div class="col-md-9" role="main">
 
 <h1 id="object-serialization">Object serialization</h1>
-<p>pecl/mongodb exports 4 public interfaces to facilitate serializing PHP classes to and from BSON.</p>
+<p>This driver includes four public interfaces to facilitate serializing PHP
+classes to and from BSON.</p>
 <ul>
-<li>BSON\Type<ul>
+<li>MongoDB\BSON\Type<ul>
 <li>(no methods)</li>
 </ul>
 </li>
-<li>BSON\Serializable<ul>
+<li>MongoDB\BSON\Serializable<ul>
 <li>abstract public method bsonSerialize();</li>
 </ul>
 </li>
-<li>BSON\Unserializable<ul>
+<li>MongoDB\BSON\Unserializable<ul>
 <li>abstract public method bsonUnserialize(array $data);</li>
 </ul>
 </li>
-<li>BSON\Persistable<ul>
-<li>implements both BSON\Serializable and BSON\Unserializable</li>
+<li>MongoDB\BSON\Persistable<ul>
+<li>extends both BSON\Serializable and BSON\Unserializable</li>
 </ul>
 </li>
 </ul>
-<p>Objects that implement the BSON\Type interface get very special treatment by the BSON serializer. In
-general, these objects represent a BSON type that cannot be natively represented in PHP - such as
-BSON\UTCDatetime and BSON\ObjectID - and are specifically checked for and handled.
-Note that implmenting BSON\Type and or BSON\Unserializable standalone does not do anything for
-userland classes.</p>
-<p>Since BSON\Type is a public interface, normal userland classes can indeed implement it to, and apply
-their own custom rules on the serialization.
-To achieve this though, the BSON\Serializable interface should be implemented instead, providing the
-bsonSerialize() function which should return a PHP array() representing the document that should be
-stored.
-Furthermore, if the object implements the BSON\Persistable interface, the driver will embed a BSON
-Binary (0x80) with the fully qualified classname, into the document.</p>
-<p>During unserialization of a document, if a BSON Binary (of type 0x80) is encountered, the driver
-will peak at the value and attempt to resolve it to a classname (triggering autoloaders if
-neccesary). If the classname cannot be resolved, no harm no faul, and nothing magical happens.
-However, if the class exists, the driver will call the bsonUnserialize() method of the detected
-class, passing it the full document.
-Note that this happens depth-first, meaning any subdocuments (relations) are resolved first, and
-then crawled upwards to the start of the document.</p>
+<p>Objects that implement the MongoDB\BSON\Type interface get special treatment by
+the BSON serializer. In general, these objects represent a BSON type that cannot
+be natively represented in PHP (e.g. MongoDB\BSON\UTCDatetime,
+MongoDB\BSON\ObjectID) and are explicitly checked for and handled by the driver.
+MongoDB\BSON\Type should not be implemented directly by userland classes.</p>
+<p>Userland classes that require custom BSON serialization should utilize the
+MongoDB\BSON\Serializable interface and implement the <code>bsonSerialize()</code>
+function, which should return a document (i.e. PHP array or stdClass object)
+representing the document that should be stored. Furthermore, if the object
+implements the MongoDB\BSON\Persistable interface, the driver will also inject a
+MongoDB\BSON\Binary value (with type 0x80 and an internal field name) into the
+document, which contains the userland object's fully qualified classname. This
+field can then be used during unserialization to ensure that the BSON document
+becomes an object of the same class on the way out of the database.</p>
+<p>During unserialization of a document, if a BSON Binary value (with type 0x80 and
+within the expected internal field name) is encountered, the driver will peek at
+the value and attempt to resolve it to a classname (triggering autoloaders if
+neccesary). If the class name cannot be resolved, nothing magical happens;
+however, if the class exists, the driver will create a new instance (without
+invoking the constructor) and invoke its <code>bsonUnserialize()</code> method, supplying
+the unserialized document data as a PHP array. Note that this happens
+depth-first, which means that embedded documents will be resolved before their
+parent.</p>
 <h2 id="examples">Examples</h2>
-<p>Imagine the following two classes, Person and Address.</p>
-<p>A Person has name, age, friends (Person), and addresses (Address).
-A Person also has a secret, that we would rather not store in a database.</p>
+<p>Consider the following two classes: Person and Address. A Person has name, age,
+friends (array of Person objects), and addresses (array of Address objects). A
+Person also has a secret, that we would rather not store in a database.</p>
 <pre><code>&lt;?php
-class Person implements BSON\Persistable {
+
+class Person implements MongoDB\BSON\Persistable
+{
     protected $_id;
     protected $name;
     protected $age;
-    protected $address = array();
-    protected $friends = array();
+    protected $address = [];
+    protected $friends = [];
     protected $secret = &quot;none&quot;;
 
-    function __construct($name, $age) {
+    function __construct($name, $age)
+    {
         $this-&gt;name    = $name;
         $this-&gt;age     = $age;
-        $this-&gt;address = array();
+        $this-&gt;address = [];
         $this-&gt;secret  = &quot;$name confidential info&quot;;
         /* Pregenerate our ObjectID */
-        $this-&gt;_id     = new BSON\ObjectID();
+        $this-&gt;_id     = new MongoDB\BSON\ObjectID();
     }
-    function addAddress(Address $address) {
+
+    function addAddress(Address $address)
+    {
         $this-&gt;address[] = $address;
     }
-    function addFriend(Person $friend) {
+
+    function addFriend(Person $friend)
+    {
         $this-&gt;friends[] = $friend;
     }
-    function bsonSerialize() {
-        return array(
+
+    function bsonSerialize()
+    {
+        return [
             &quot;_id&quot;     =&gt; $this-&gt;_id,
             &quot;name&quot;    =&gt; $this-&gt;name,
             &quot;age&quot;     =&gt; $this-&gt;age,
             &quot;address&quot; =&gt; $this-&gt;address,
             &quot;friends&quot; =&gt; $this-&gt;friends,
-        );
+        ];
     }
-    function bsonUnserialize(array $data) {
+
+    function bsonUnserialize(array $data)
+    {
         $this-&gt;_id     = $data[&quot;_id&quot;];
         $this-&gt;name    = $data[&quot;name&quot;];
         $this-&gt;age     = $data[&quot;age&quot;];
@@ -210,34 +226,41 @@ class Person implements BSON\Persistable {
     }
 }
 
-class Address implements BSON\Persistable {
+class Address implements MongoDB\BSON\Persistable
+{
     protected $zip;
     protected $country;
 
-    function __construct($zip, $country) {
+    function __construct($zip, $country)
+    {
         $this-&gt;zip = $zip;
         $this-&gt;country = $country;
     }
-    function bsonSerialize() {
-        return array(
+
+    function bsonSerialize()
+    {
+        return [
             &quot;zip&quot;     =&gt; $this-&gt;zip,
             &quot;country&quot; =&gt; $this-&gt;country,
-        );
+        ];
     }
-    function bsonUnserialize(array $data) {
+
+    function bsonUnserialize(array $data)
+    {
         $this-&gt;zip = $data[&quot;zip&quot;];
         $this-&gt;country = $data[&quot;country&quot;];
     }
 }
+
 ?&gt;
 </code></pre>
 
-<p>Hannes, 31 years old, has two addresses;</p>
+<p>Hannes is 31 years old and has two addresses;</p>
 <ul>
 <li>Sunnyvale, USA</li>
 <li>Kopavogur, Iceland</li>
 </ul>
-<p>He is friends with young Jeremy, 21 year old who lives in Michigan</p>
+<p>He is friends with young Jeremy, a 21 year old who lives in Michigan:</p>
 <pre><code>&lt;?php
 $hannes = new Person(&quot;Hannes&quot;, 31);
 $sunnyvale = new Address(94086, &quot;USA&quot;);
@@ -250,10 +273,11 @@ $michigan = new Address(48169, &quot;USA&quot;);
 $mikola-&gt;addAddress($michigan);
 
 $hannes-&gt;addFriend($mikola);
+
 ?&gt;
 </code></pre>
 
-<p>To save this information we can insert $hannes to the database like so:</p>
+<p>To save this information, we can insert <code>$hannes</code> into the database like so:</p>
 <pre><code>&lt;?php
 try {
     $wc = new MongoDB\Driver\WriteConcern(MongoDB\Driver\WriteConcern::MAJORITY);
@@ -267,58 +291,62 @@ try {
 ?&gt;
 </code></pre>
 
-<p>This will result in the following document to be stored (as shown by mongo shell):</p>
+<p>This will result in the following document stored (as shown by mongo shell):</p>
 <pre><code>{
-    &quot;_id&quot; : ObjectId(&quot;551f2004bd21b959de3c15b1&quot;),
-    &quot;__pclass&quot; : BinData(128,&quot;UGVyc29u&quot;),
-    &quot;name&quot; : &quot;Hannes&quot;,
-    &quot;age&quot; : 31,
-    &quot;address&quot; : [
+  &quot;_id&quot; : ObjectId(&quot;551f2004bd21b959de3c15b1&quot;),
+  &quot;__pclass&quot; : BinData(128,&quot;UGVyc29u&quot;),
+  &quot;name&quot; : &quot;Hannes&quot;,
+  &quot;age&quot; : 31,
+  &quot;address&quot; : [
+    {
+      &quot;__pclass&quot; : BinData(128,&quot;QWRkcmVzcw==&quot;),
+      &quot;zip&quot; : 94086,
+      &quot;country&quot; : &quot;USA&quot;
+    },
+    {
+      &quot;__pclass&quot; : BinData(128,&quot;QWRkcmVzcw==&quot;),
+      &quot;zip&quot; : 200,
+      &quot;country&quot; : &quot;Iceland&quot;
+    }
+  ],
+  &quot;friends&quot; : [
+    {
+      &quot;__pclass&quot; : BinData(128,&quot;UGVyc29u&quot;),
+      &quot;_id&quot; : ObjectId(&quot;551f2004bd21b959de3c15b2&quot;),
+      &quot;name&quot; : &quot;Jeremy&quot;,
+      &quot;age&quot; : 21,
+      &quot;address&quot; : [
         {
-            &quot;__pclass&quot; : BinData(128,&quot;QWRkcmVzcw==&quot;),
-            &quot;zip&quot; : 94086,
-            &quot;country&quot; : &quot;USA&quot;
-        },
-        {
-            &quot;__pclass&quot; : BinData(128,&quot;QWRkcmVzcw==&quot;),
-            &quot;zip&quot; : 200,
-            &quot;country&quot; : &quot;Iceland&quot;
+          &quot;__pclass&quot; : BinData(128,&quot;QWRkcmVzcw==&quot;),
+          &quot;zip&quot; : 48169,
+          &quot;country&quot; : &quot;USA&quot;
         }
-    ],
-    &quot;friends&quot; : [
-        {
-            &quot;__pclass&quot; : BinData(128,&quot;UGVyc29u&quot;),
-            &quot;_id&quot; : ObjectId(&quot;551f2004bd21b959de3c15b2&quot;),
-            &quot;name&quot; : &quot;Jeremy&quot;,
-            &quot;age&quot; : 21,
-            &quot;address&quot; : [
-                {
-                    &quot;__pclass&quot; : BinData(128,&quot;QWRkcmVzcw==&quot;),
-                    &quot;zip&quot; : 48169,
-                    &quot;country&quot; : &quot;USA&quot;
-                }
-            ],
-            &quot;friends&quot; : {
+      ],
+      &quot;friends&quot; : {
 
-            }
-        }
-    ]
+      }
+    }
+  ]
 }
 </code></pre>
 
-<p>When we read this document back, the driver will convert the individual subdocuments back into the
-original classes, as we have full type information for them now:</p>
+<p>When we read this document back, the driver will convert the individual
+sub-documents back into their original classes, as we have full type information
+for them now:</p>
 <pre><code>&lt;?php
+
 $rp = new MongoDB\Driver\ReadPreference(MongoDB\Driver\ReadPreference::RP_PRIMARY_PREFERRED);
-$query = new MongoDB\Driver\Query(array());
+$query = new MongoDB\Driver\Query([]);
 $cursor = $manager-&gt;executeQuery(&quot;congress.people&quot;, $query, $rp);
+
 foreach($cursor as $person) {
     var_dump($person);
 }
+
 ?&gt;
 </code></pre>
 
-<p>Which results in:</p>
+<p>This results in:</p>
 <pre><code>object(Person)#22 (6) {
   [&quot;_id&quot;:protected]=&gt;
   object(BSON\ObjectID)#15 (0) {

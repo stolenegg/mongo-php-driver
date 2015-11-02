@@ -117,13 +117,13 @@
             <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
     <ul class="nav bs-sidenav">
     
-        <li class="main active"><a href="#bulk-crud">Bulk CRUD</a></li>
+        <li class="main active"><a href="#bulk-crud-operations">Bulk CRUD Operations</a></li>
         
-            <li><a href="#create">CREATE</a></li>
+            <li><a href="#create">Create</a></li>
         
-            <li><a href="#update">UPDATE</a></li>
+            <li><a href="#update">Update</a></li>
         
-            <li><a href="#delete">DELETE</a></li>
+            <li><a href="#delete">Delete</a></li>
         
             <li><a href="#executing-and-checking-the-results">Executing and checking the results</a></li>
         
@@ -132,45 +132,42 @@
 </div></div>
             <div class="col-md-9" role="main">
 
-<h1 id="bulk-crud">Bulk CRUD</h1>
+<h1 id="bulk-crud-operations">Bulk CRUD Operations</h1>
 <pre><code class="php">&lt;?php
 
-$hannes = array(
+$hannes = [
     &quot;name&quot;    =&gt; &quot;Hannes&quot;,
     &quot;nick&quot;    =&gt; &quot;bjori&quot;,
     &quot;citizen&quot; =&gt; &quot;Iceland&quot;,
-);
-$hayley = array(
+];
+$hayley = [
     &quot;name&quot;    =&gt; &quot;Hayley&quot;,
     &quot;nick&quot;    =&gt; &quot;Alien Ninja&quot;,
     &quot;citizen&quot; =&gt; &quot;USA&quot;,
-);
-$jonpall = array(
+];
+$jonpall = [
     &quot;name&quot;    =&gt; &quot;Jon Pall&quot;,
     &quot;nick&quot;    =&gt; &quot;unknown&quot;,
     &quot;citizen&quot; =&gt; &quot;Iceland&quot;,
-);
+];
 
-/* Ordered bulk is executed in the same order as we add the operations to it.
- * If operation fails the execution stops and no further operations executed.
- * For unordered bulk, the operations can be executed in any order by the database
- * in an attempt to optimize its workload. An operation failure will not stop
- * the exection of the rest of the operations.
- * Default: true
- */
-$ordered = true;
-
-$bulk = new MongoDB\Driver\BulkWrite($ordered);
+/* Ordered bulk operations (default) are executed in the same order that we add
+ * the write operations. If an operation fails, execution stops and no further
+ * operations are attempted. For unordered bulk operations, the operations may
+ * be executed in any order by the database in an attempt to optimize its
+ * workload. An operation failure within an unordered batch will not stop
+ * execution of additional write operations in that batch. */
+$bulk = new MongoDB\Driver\BulkWrite(['ordered' =&gt; true]);
 
 ?&gt;
 </code></pre>
 
-<h2 id="create">CREATE</h2>
+<h2 id="create">Create</h2>
 <pre><code class="php">&lt;?php
 
-/* Argument#1 The document (array/object) to insert.
- * Returns the generated BSON\ObjectID if no _id was provided
- */
+/* Specify the document to insert (array or object) as the first argument. If a
+ * document does not already have an &quot;_id&quot; field, a generated
+ * MongoDB\BSON\ObjectId will be returned. */
 $hannes_id  = $bulk-&gt;insert($hannes);
 $hayley_id  = $bulk-&gt;insert($hayley);
 $jonpall_id = $bulk-&gt;insert($jonpall);
@@ -178,76 +175,86 @@ $jonpall_id = $bulk-&gt;insert($jonpall);
 ?&gt;
 </code></pre>
 
-<h2 id="update">UPDATE</h2>
+<h2 id="update">Update</h2>
 <pre><code class="php">&lt;?php
 
-/* Arguments
- *  #1: array, search criteria
- *  #2: array, the object or operations to apply to the matching document
- *  #3: array, wire protocol options:
- *             limit: integer, 0 or 1,
- *                  0: Apply to all matching documents
- *                  1: Only apply to the first matching document
- *              upsert: boolean
- *                  true: Insert new document matching the criteria
- *                  false: Do not insert new document if no matches are found
- */
+/* Arguments:
+ *
+ *  #1 (array|object): search criteria to select the document(s) for updating
+ *  #2 (array|object): replacement document or atomic operations to apply
+ *  #3 (array): update options
+ *    * limit (integer): Updates all matching documents when 0 (false).
+ *      Otherwise, only the first matching document is updated.
+ *    * upsert (boolean): If there is no matching document, create a new
+ *      document from $filter and $update. */
 $bulk-&gt;update(
-    array(&quot;_id&quot; =&gt; $hayley_id),
-    array('$set' =&gt; array(&quot;citizen&quot; =&gt; &quot;Iceland&quot;)),
-    array(&quot;limit&quot; =&gt; 1, &quot;upsert&quot; =&gt; false)
+    [&quot;_id&quot; =&gt; $hayley_id],
+    ['$set' =&gt; [&quot;citizen&quot; =&gt; &quot;Iceland&quot;]],
+    [&quot;limit&quot; =&gt; 1, &quot;upsert&quot; =&gt; false]
 );
 $bulk-&gt;update(
-    array(&quot;citizen&quot; =&gt; &quot;Iceland&quot;),
-    array('$set' =&gt; array(&quot;viking&quot; =&gt; true)),
-    array(&quot;limit&quot; =&gt; 0, &quot;upsert&quot; =&gt; false)
+    [&quot;citizen&quot; =&gt; &quot;Iceland&quot;],
+    ['$set' =&gt; [&quot;viking&quot; =&gt; true]],
+    [&quot;limit&quot; =&gt; 0, &quot;upsert&quot; =&gt; false]
 );
 $bulk-&gt;update(
-    array(&quot;name&quot; =&gt; &quot;Chuck Norris&quot;),
-    array('$set' =&gt; array(&quot;viking&quot; =&gt; false)),
-    array(&quot;limit&quot; =&gt; 1, &quot;upsert&quot; =&gt; true)
-);
+    [&quot;name&quot; =&gt; &quot;Chuck Norris&quot;],
+    ['$set' =&gt; [&quot;viking&quot; =&gt; false]],
+    [&quot;limit&quot; =&gt; 1, &quot;upsert&quot; =&gt; true]
+];
 
 ?&gt;
 </code></pre>
 
-<h2 id="delete">DELETE</h2>
+<h2 id="delete">Delete</h2>
 <pre><code class="php">&lt;?php
 
-/* Arguments
- *  #1: array, search criteria
- *  #2: array, wire protocol options:
- *             limit: integer, 0 or 1,
- *                  0: Delete all matching documents
- *                  1: Only delete the first matching document
- */
-$bulk-&gt;delete(array(&quot;_id&quot; =&gt; $jonpall_id), array(&quot;limit&quot; =&gt; 1));
+/* Arguments:
+ *
+ *  #1 (array|object): search criteria to select the document(s) for deleting
+ *  #3 (array): delete options
+ *    * limit (integer): Deletes all matching documents when 0 (false).
+ *      Otherwise, only the first matching document is deleted. */
+$bulk-&gt;delete(
+    [&quot;_id&quot; =&gt; $jonpall_id],
+    [&quot;limit&quot; =&gt; 1]
+);
 
 ?&gt;
 </code></pre>
 
 <h2 id="executing-and-checking-the-results">Executing and checking the results</h2>
 <pre><code class="php">&lt;?php
+
+// Construct a write concern
+$wc = new MongoDB\Driver\WriteConcern(
+    // Guarantee that writes are acknowledged by a majority of our nodes
+    MongoDB\Driver\WriteConcern::MAJORITY,
+    // But only wait 1000ms because we have an application to run!
+    1000
+);
+
 $manager = new MongoDB\Driver\Manager(&quot;mongodb://localhost:27017&quot;);
-$wc      = new MongoDB\Driver\WriteConcern(MongoDB\Driver\WriteConcern::MAJORITY);
 $result  = $manager-&gt;executeBulkWrite(&quot;db.collection&quot;, $bulk, $wc);
 
 printf(&quot;insertedCount: %d\n&quot;, $result-&gt;getInsertedCount());
-printf(&quot;matchedCount: %d\n&quot;, $result-&gt;getMatchedCount());
+printf(&quot;matchedCount:  %d\n&quot;, $result-&gt;getMatchedCount());
 printf(&quot;modifiedCount: %d\n&quot;, $result-&gt;getModifiedCount());
 printf(&quot;upsertedCount: %d\n&quot;, $result-&gt;getUpsertedCount());
-printf(&quot;deletedCount: %d\n&quot;, $result-&gt;getDeletedCount());
+printf(&quot;deletedCount:  %d\n&quot;, $result-&gt;getDeletedCount());
 
 foreach ($result-&gt;getUpsertedIds() as $index =&gt; $id) {
     printf(&quot;upsertedId: '%s', index: %d\n&quot;, $id, $index);
 }
 
-$query  = new MongoDB\Driver\Query(array(&quot;viking&quot; =&gt; false));
+$query  = new MongoDB\Driver\Query([&quot;viking&quot; =&gt; false]);
 $cursor = $manager-&gt;executeQuery(&quot;db.collection&quot;, $query);
-/* Note that var_dump()ing the $cursor will print out all sorts of debug information
- * about the cursor, such as ReadPreferences used, the query executed, namespace,
- * query flags, and the current bulk information */
-var_dump(iterator_to_array($cursor));
+
+/* Note that var_dump()-ing the $cursor directly will print out additional debug
+ * information about the cursor, such as the read preferenced used, the query
+ * executed, namespace, query flags, and information about the current batch of
+ * results from the server. Instead, we'll simply var_dump() the results. */
+var_dump($cursor-&gt;toArray());
 
 ?&gt;
 </code></pre></div>
