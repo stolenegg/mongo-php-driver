@@ -282,7 +282,9 @@ $hannes-&gt;addFriend($mikola);
 try {
     $wc = new MongoDB\Driver\WriteConcern(MongoDB\Driver\WriteConcern::MAJORITY);
     $manager = new MongoDB\Driver\Manager(&quot;mongodb://192.168.112.10:2000&quot;);
-    $result = $manager-&gt;executeInsert(&quot;congress.people&quot;, $hannes, $wc);
+    $bulk = new MongoDB\Driver\BulkWrite;
+    $bulk-&gt;insert($hannes);
+    $result = $manager-&gt;executeBulkWrite(&quot;congress.people&quot;, $bulk, $wc);
     echo &quot;Hannes has been inserted\n&quot;;
 } catch(Exception $e) {
     echo $e-&gt;getMessage(), &quot;\n&quot;;
