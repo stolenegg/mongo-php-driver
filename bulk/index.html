@@ -183,24 +183,25 @@ $jonpall_id = $bulk-&gt;insert($jonpall);
  *  #1 (array|object): search criteria to select the document(s) for updating
  *  #2 (array|object): replacement document or atomic operations to apply
  *  #3 (array): update options
- *    * limit (integer): Updates all matching documents when 0 (false).
- *      Otherwise, only the first matching document is updated.
+ *    * multi (boolean): Updates all matching documents when true; otherwise,
+ *      only the first matching document is updated. Defaults to false.
  *    * upsert (boolean): If there is no matching document, create a new
- *      document from $filter and $update. */
+ *      document from the first two arguments. Defaults to false.
+ */
 $bulk-&gt;update(
     [&quot;_id&quot; =&gt; $hayley_id],
     ['$set' =&gt; [&quot;citizen&quot; =&gt; &quot;Iceland&quot;]],
-    [&quot;limit&quot; =&gt; 1, &quot;upsert&quot; =&gt; false]
+    [&quot;multi&quot; =&gt; false, &quot;upsert&quot; =&gt; false]
 );
 $bulk-&gt;update(
     [&quot;citizen&quot; =&gt; &quot;Iceland&quot;],
     ['$set' =&gt; [&quot;viking&quot; =&gt; true]],
-    [&quot;limit&quot; =&gt; 0, &quot;upsert&quot; =&gt; false]
+    [&quot;multi&quot; =&gt; true, &quot;upsert&quot; =&gt; false]
 );
 $bulk-&gt;update(
     [&quot;name&quot; =&gt; &quot;Chuck Norris&quot;],
     ['$set' =&gt; [&quot;viking&quot; =&gt; false]],
-    [&quot;limit&quot; =&gt; 1, &quot;upsert&quot; =&gt; true]
+    [&quot;multi&quot; =&gt; false, &quot;upsert&quot; =&gt; true]
 ];
 
 ?&gt;

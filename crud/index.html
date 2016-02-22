@@ -221,19 +221,20 @@ try {
 
 // Specify the search criteria and update operations (or replacement document)
 $filter = [&quot;hello&quot; =&gt; &quot;world&quot;];
-$update = ['$set' =&gt; [&quot;hello&quot; =&gt; &quot;wonderful world&quot;]];
+$newObj = ['$set' =&gt; [&quot;hello&quot; =&gt; &quot;wonderful world&quot;]];
 
 /* Specify some command options for the update:
  *
- *  * limit (integer): Updates all matching documents when 0 (false). Otherwise,
- *    only the first matching document is updated.
+ *  * multi (boolean): Updates all matching documents when true; otherwise, only
+ *    the first matching document is updated. Defaults to false.
  *  * upsert (boolean): If there is no matching document, create a new document
- *    from $filter and $update. */
-$options = [&quot;limit&quot; =&gt; 1, &quot;upsert&quot; =&gt; false];
+ *    from $filter and $newObj. Defaults to false.
+ */
+$options = [&quot;multi&quot; =&gt; true, &quot;upsert&quot; =&gt; false];
 
 // Create a bulk write object and add our update operation
 $bulk = new MongoDB\Driver\BulkWrite;
-$bulk-&gt;update($filter, $update, $options);
+$bulk-&gt;update($filter, $newObj, $options);
 
 try {
     /* Specify the full namespace as the first argument, followed by the bulk
