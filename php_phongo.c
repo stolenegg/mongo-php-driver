@@ -2469,6 +2469,9 @@ PHP_MINIT_FUNCTION(mongodb)
 	phongo_std_object_handlers.get_closure          = NULL;
 	*/
 
+	/* Start random number generator */
+	srand(time(0));
+
 	PHP_MINIT(bson)(INIT_FUNC_ARGS_PASSTHRU);
 
 	PHP_MINIT(Command)(INIT_FUNC_ARGS_PASSTHRU);
